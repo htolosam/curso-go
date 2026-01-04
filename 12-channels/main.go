@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"sync"
 	"time"
 )
 
@@ -190,13 +191,25 @@ func cuadrado(in <-chan int) <-chan int {
 
 func merge(cs ...<-chan int) <-chan int {
 	out := make(chan int)
+	var wg sync.WaitGroup
 	
-	go func() {
-		for _, c := range cs {
-			for n := range c {
-				out <- n
-			}
+	// Función para procesar cada canal
+	output := func(c <-chan int) {
+		defer wg.Done()
+		for n := range c {
+			out <- n
 		}
+	}
+	
+	// Lanzar una goroutine por cada canal
+	wg.Add(len(cs))
+	for _, c := range cs {
+		go output(c)
+	}
+	
+	// Cerrar el canal de salida cuando todos terminen
+	go func() {
+		wg.Wait()
 		close(out)
 	}()
 	

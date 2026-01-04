@@ -28,7 +28,7 @@ Bienvenido al curso de programación en Go (Golang). Este repositorio contiene e
 
 ## Requisitos
 
-- Go 1.20 o superior instalado
+- Go 1.23 o superior instalado
 - Editor de código (VS Code, GoLand, etc.)
 
 ## Cómo usar este curso
