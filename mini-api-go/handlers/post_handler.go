@@ -44,6 +44,8 @@ func GetPostByID(w http.ResponseWriter, r *http.Request) {
 		if post.ID == id {
 			w.WriteHeader(http.StatusOK)
 			_ = json.NewEncoder(w).Encode(post)
+			return
 		}
 	}
+	http.Error(w, "Post not found", http.StatusNotFound)
 }
