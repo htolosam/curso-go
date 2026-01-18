@@ -13,8 +13,8 @@ type Context struct {
 	userID  uint
 }
 
-func (c *Context) Sebd(text string) {
-	c.RWriter.Write([]byte(text))
+func (c *Context) Send(text string) {
+	_, _ = c.RWriter.Write([]byte(text))
 }
 
 func (c *Context) Status(code int) {
