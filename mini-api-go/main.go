@@ -20,6 +20,7 @@ func main() {
 			log.Fatal("Error al cerrar la base de datos:", err)
 		}
 	}()
+
 	app := server.NewApp()
 	app.Get("/health", handlers.Health)
 	app.Get("/posts", handlers.GetPosts)
