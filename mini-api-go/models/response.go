@@ -1,6 +1,9 @@
 package models
 
-import "mini-api-go/server"
+import (
+	"mini-api-go/server"
+	"net/http"
+)
 
 type ErrorResponse struct {
 	Error   string `json:"error"`
@@ -24,7 +27,7 @@ func NewAppError(message string, code int) *AppError {
 func ResponseError(c *server.Context, appError *AppError) {
 	err := c.JSON(
 		appError.Code,
-		ErrorResponse{Error: "error", Message: appError.Message, Code: appError.Code},
+		ErrorResponse{Error: http.StatusText(appError.Code), Message: appError.Message, Code: appError.Code},
 	)
 	if err != nil {
 		return
