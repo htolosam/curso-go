@@ -5,7 +5,9 @@ import (
 	"mini-api-go/config"
 	"mini-api-go/database"
 	"mini-api-go/handlers"
+	"mini-api-go/repositories"
 	"mini-api-go/server"
+	"mini-api-go/services"
 )
 
 func main() {
@@ -20,15 +22,18 @@ func main() {
 			log.Fatal("Error al cerrar la base de datos:", err)
 		}
 	}()
+	userRepo := repositories.NewUserRepository(database.DB)
+	userService := services.NewUserService(userRepo)
+	userHandler := handlers.NewUserHandler(userService)
 
 	app := server.NewApp()
 	app.Get("/health", handlers.Health)
-	app.Get("/posts", handlers.GetPosts)
+	app.Post("/singup", userHandler.SignUp)
 	app.Get("/posts/{id}", handlers.GetPostByID)
 	app.Post("/posts", handlers.CreatePost)
 
 	err := app.RunServer(configuration.Port)
 	if err != nil {
-		log.Fatal("Error al iniciar el servidor")
+		log.Fatal("Error al iniciar el servidor:", err)
 	}
 }

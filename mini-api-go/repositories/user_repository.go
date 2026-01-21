@@ -17,8 +17,8 @@ func NewUserRepository(db *sql.DB) *UserRepository {
 }
 
 func (r *UserRepository) Create(cxt context.Context, user *models.User) error {
-	query := "INSERT INTO users (name, email, password) VALUES (?, ?, ?)"
-	result, err := r.db.ExecContext(cxt, query, user.Name, user.Email, user.Password)
+	query := "INSERT INTO users (name, lastName, email, password) VALUES (?, ?, ?, ?)"
+	result, err := r.db.ExecContext(cxt, query, user.Name, user.LastName, user.Email, user.Password)
 	if err != nil {
 		return fmt.Errorf("Error al insertar usuario: %s", err)
 	}
@@ -31,9 +31,9 @@ func (r *UserRepository) Create(cxt context.Context, user *models.User) error {
 }
 
 func (r *UserRepository) GetByID(cxt context.Context, id uint) (*models.User, error) {
-	query := "SELECT id, name, email FROM users WHERE id = ?"
+	query := "SELECT id, name, lastName, email FROM users WHERE id = ?"
 	user := &models.User{}
-	err := r.db.QueryRowContext(cxt, query, id).Scan(&user.ID, &user.Name, &user.Email)
+	err := r.db.QueryRowContext(cxt, query, id).Scan(&user.ID, &user.Name, &user.LastName, &user.Email)
 
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -45,9 +45,9 @@ func (r *UserRepository) GetByID(cxt context.Context, id uint) (*models.User, er
 }
 
 func (r *UserRepository) FindByEmail(cxt context.Context, email string) (*models.User, error) {
-	query := "SELECT id, name, email, password FROM users WHERE email = ?"
+	query := "SELECT id, name, lastName, email, password FROM users WHERE email = ?"
 	user := &models.User{}
-	err := r.db.QueryRowContext(cxt, query, email).Scan(&user.ID, &user.Name, &user.Email, &user.Password)
+	err := r.db.QueryRowContext(cxt, query, email).Scan(&user.ID, &user.Name, &user.LastName, &user.Email, &user.Password)
 
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {

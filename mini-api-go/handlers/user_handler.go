@@ -1,0 +1,58 @@
+package handlers
+
+import (
+	"fmt"
+	"log"
+	"mini-api-go/models"
+	"mini-api-go/server"
+	"mini-api-go/services"
+	"net/http"
+	"regexp"
+)
+
+type UserHandler struct {
+	userService *services.UserService
+}
+
+func NewUserHandler(userService *services.UserService) *UserHandler {
+	return &UserHandler{userService: userService}
+}
+
+func (h *UserHandler) SignUp(c *server.Context) {
+	var req models.SingUpUser
+	if err := c.BindJSON(&req); err != nil {
+		models.ResponseError(c, models.NewAppError("Error al decodificar json", http.StatusBadRequest))
+		return
+	}
+	if req.Name == "" || req.Email == "" || req.Password == "" {
+		models.ResponseError(c, models.NewAppError("Datos invalidos", http.StatusBadRequest))
+		return
+	}
+	user, err := h.userService.SingUp(c.Request.Context(), req.Name, req.LastName, req.Email, req.Password)
+	if err != nil {
+		models.ResponseError(c, models.NewAppError("Error al crear usuario", http.StatusInternalServerError))
+		return
+	}
+	err = c.JSON(http.StatusCreated, map[string]interface{}{
+		"message": "Usuario creado con exito",
+		"user":    user})
+	if err != nil {
+		log.Println("Error al codificar json en la respuesta del handler")
+		return
+	}
+}
+
+func ValidateEmail(email string) error {
+	emailRegexp := regexp.MustCompile(`^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$`)
+	if !emailRegexp.MatchString(email) {
+		return fmt.Errorf("email invalido")
+	}
+	return nil
+}
+
+func ValidatePassword(password string) error {
+	if len(password) < 6 {
+		return fmt.Errorf("La contraseña debe tener al menos 6 caracteres")
+	}
+	return nil
+}
