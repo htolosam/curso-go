@@ -13,6 +13,8 @@ type Config struct {
 	DatabaseURL string
 }
 
+var AppConfig *Config
+
 func LoadConfig() *Config {
 	err := godotenv.Load(".env")
 	if err != nil {
