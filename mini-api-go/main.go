@@ -23,7 +23,7 @@ func main() {
 		}
 	}()
 	userRepo := repositories.NewUserRepository(database.DB)
-	userService := services.NewUserService(userRepo)
+	userService := services.NewUserService(userRepo, configuration)
 	userHandler := handlers.NewUserHandler(userService)
 
 	app := server.NewApp()
@@ -31,6 +31,7 @@ func main() {
 	app.Post("/singup", userHandler.SignUp)
 	app.Get("/posts/{id}", handlers.GetPostByID)
 	app.Post("/posts", handlers.CreatePost)
+	app.Post("/login", userHandler.Login)
 
 	err := app.RunServer(configuration.Port)
 	if err != nil {

@@ -39,3 +39,28 @@ func (h *UserHandler) SignUp(c *server.Context) {
 		return
 	}
 }
+
+func (h *UserHandler) Login(c *server.Context) {
+	var req models.LoginUser
+	if err := c.BindJSON(&req); err != nil {
+		models.ResponseError(c, models.NewAppError("Error al decodificar json", http.StatusBadRequest))
+		return
+	}
+	if req.Email == "" || req.Password == "" {
+		models.ResponseError(c, models.NewAppError("Datos invalidos", http.StatusBadRequest))
+		return
+	}
+	token, err := h.userService.Login(c.Context(), req.Email, req.Password)
+	if err != nil {
+		models.ResponseError(c, models.NewAppError(err.Error(), http.StatusInternalServerError))
+		return
+	}
+	err = c.JSON(http.StatusOK, map[string]interface{}{
+		"message": "Usuario autenticado con exito",
+		"token":   token,
+	})
+	if err != nil {
+		log.Println("Error al codificar json en la respuesta del handler")
+		return
+	}
+}

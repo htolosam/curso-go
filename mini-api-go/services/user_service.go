@@ -14,11 +14,12 @@ import (
 )
 
 type UserService struct {
-	repo *repositories.UserRepository
+	repo   *repositories.UserRepository
+	config *config.Config
 }
 
-func NewUserService(repo *repositories.UserRepository) *UserService {
-	return &UserService{repo: repo}
+func NewUserService(repo *repositories.UserRepository, cfg *config.Config) *UserService {
+	return &UserService{repo: repo, config: cfg}
 }
 
 func (s *UserService) SingUp(ctx context.Context, name, lastName, email, password string) (*models.User, error) {
@@ -52,7 +53,23 @@ func (s *UserService) SingUp(ctx context.Context, name, lastName, email, passwor
 	return user, nil
 }
 
-func (s *UserService) generateToken(ctx context.Context, userId uint) (string, error) {
+func (s *UserService) Login(ctx context.Context, email, password string) (string, error) {
+	user, err := s.repo.FindByEmail(ctx, email)
+	if err != nil {
+		return "", fmt.Errorf("Credenciales incorrectas: %s", err)
+	}
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
+	if err != nil {
+		return "", fmt.Errorf("Credenciales incorrectas: %s", err)
+	}
+	token, err := s.generateToken(user.ID)
+	if err != nil {
+		return "", fmt.Errorf("Error al generar el token: %s", err)
+	}
+	return token, nil
+}
+
+func (s *UserService) generateToken(userId uint) (string, error) {
 	claims := jwt.MapClaims{
 		"user_id": userId,
 		"exp":     jwt.NewNumericDate(time.Now().Add(time.Hour * 72)),
@@ -60,7 +77,7 @@ func (s *UserService) generateToken(ctx context.Context, userId uint) (string, e
 	// creamos el token
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	// firmamos el token
-	return token.SignedString([]byte(config.AppConfig.JwtSecret))
+	return token.SignedString([]byte(s.config.JwtSecret))
 }
 
 func ValidateEmail(email string) error {
