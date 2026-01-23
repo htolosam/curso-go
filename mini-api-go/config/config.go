@@ -20,12 +20,12 @@ func LoadConfig() *Config {
 	if err != nil {
 		log.Println("not found .env file")
 	}
-	appConfig := &Config{
+	AppConfig = &Config{
 		Port:        getEnv("PORT", "5050"),
 		JwtSecret:   getEnv("JWT_SECRET", "someKey"),
 		DatabaseURL: getEnv("DATABASE_URL", "mysql"),
 	}
-	return appConfig
+	return AppConfig
 }
 
 func getEnv(key, defaultValue string) string {
