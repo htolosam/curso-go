@@ -64,3 +64,22 @@ func (h *UserHandler) Login(c *server.Context) {
 		return
 	}
 }
+
+func (h *UserHandler) MeHandler(c *server.Context) {
+	userID := c.GetUserID()
+	if userID == 0 {
+		models.ResponseError(c, models.NewAppError("No hay usuario autenticado", http.StatusUnauthorized))
+		return
+	}
+	user, err := h.userService.GetUserByID(c.Context(), userID)
+	if err != nil {
+		models.ResponseError(c, models.NewAppError("Usuaurio no encontrado", http.StatusNotFound))
+	}
+	err = c.JSON(http.StatusOK, map[string]interface{}{
+		"user": user,
+	})
+	if err != nil {
+		log.Println("Error al codificar json en la respuesta del handler")
+		return
+	}
+}

@@ -5,6 +5,7 @@ import (
 	"mini-api-go/config"
 	"mini-api-go/database"
 	"mini-api-go/handlers"
+	"mini-api-go/middleware"
 	"mini-api-go/repositories"
 	"mini-api-go/server"
 	"mini-api-go/services"
@@ -32,6 +33,8 @@ func main() {
 	app.Get("/posts/{id}", handlers.GetPostByID)
 	app.Post("/posts", handlers.CreatePost)
 	app.Post("/login", userHandler.Login)
+
+	app.Get("/me", middleware.AuthMiddleware(userHandler.MeHandler))
 
 	err := app.RunServer(configuration.Port)
 	if err != nil {

@@ -80,6 +80,10 @@ func (s *UserService) generateToken(userId uint) (string, error) {
 	return token.SignedString([]byte(s.config.JwtSecret))
 }
 
+func (s *UserService) GetUserByID(ctx context.Context, id uint) (*models.User, error) {
+	return s.repo.GetByID(ctx, id)
+}
+
 func ValidateEmail(email string) error {
 	emailRegexp := regexp.MustCompile(`^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$`)
 	if !emailRegexp.MatchString(email) {
