@@ -52,7 +52,7 @@ func (r *PostRepository) FindAll(cxt context.Context) ([]models.Post, error) {
 func (r *PostRepository) FindByID(cxt context.Context, id uint) (*models.Post, error) {
 	query := "SELECT * FROM posts WHERE id = ?"
 	post := &models.Post{}
-	err := r.db.QueryRowContext(cxt, query, id).Scan(&post.ID, &post.Tittle, &post.Content, &post.UserID)
+	err := r.db.QueryRowContext(cxt, query, id).Scan(&post.ID, &post.UserID, &post.Tittle, &post.Content, &post.CreatedAt, &post.UpdatedAt)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, fmt.Errorf("No existe un post con id %d", id)
@@ -72,7 +72,7 @@ func (r *PostRepository) FindByUserID(cxt context.Context, userID uint) ([]model
 	var posts []models.Post
 	for rows.Next() {
 		var post models.Post
-		if err = rows.Scan(&post.ID, &post.Tittle, &post.Content, &post.UserID,
+		if err = rows.Scan(&post.ID, &post.UserID, &post.Tittle, &post.Content,
 			&post.CreatedAt, &post.UpdatedAt); err != nil {
 			return nil, fmt.Errorf("Error al decodificar los posts de un usuario: %s", err)
 		}
@@ -111,4 +111,23 @@ func (r *PostRepository) Delete(ctx context.Context, id uint) error {
 		return fmt.Errorf("post no encontrado")
 	}
 	return nil
+}
+
+func (r *PostRepository) FindAllPaginated(ctx context.Context, page, pageSize int) ([]models.Post, error) {
+	query := "SELECT * FROM posts ORDER BY created_at DESC LIMIT ? OFFSET ?"
+	result, err := r.db.QueryContext(ctx, query, pageSize, (page-1)*pageSize)
+	if err != nil {
+		return nil, fmt.Errorf("Error al obtener los posts: %s", err)
+	}
+	defer result.Close()
+	var posts []models.Post
+	for result.Next() {
+		var post models.Post
+		if err = result.Scan(&post.ID, &post.UserID, &post.Tittle, &post.Content,
+			&post.CreatedAt, &post.UpdatedAt); err != nil {
+			return nil, fmt.Errorf("Error al decodificar los posts: %s", err)
+		}
+		posts = append(posts, post)
+	}
+	return posts, nil
 }
